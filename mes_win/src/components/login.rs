@@ -1,11 +1,44 @@
 // 一次性导入 Yew 框架中所有最核心和常用的项
 use yew::prelude::*;
 use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+}
+
+// 登录请求参数
+#[derive(Serialize)]
+struct LoginArgs {
+    username: String,
+    password: String,
+}
+
+// API通用响应结构
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)] // 允许未使用的字段，这些字段来自API响应
+struct ApiResponse<T> {
+    success: bool,
+    code: u32,
+    message: String,
+    data: Option<T>,
+}
+
+// 登录响应数据
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)] // 允许未使用的字段，这些字段来自API响应
+struct LoginData {
+    #[serde(rename = "accessToken")]
+    access_token: String,
+    #[serde(rename = "tokenType")]
+    token_type: String,
+    #[serde(rename = "expiresIn")]
+    expires_in: u32,
+    username: String,
+    #[serde(rename = "userId")]
+    user_id: u32,
 }
 
 //定义登录表单的状态结构
@@ -16,8 +49,6 @@ pub struct LoginState{
     pub password: String,
     pub is_loading: bool, 
     pub error_message: Option<String>,
-    pub is_logged_in: bool,  // 添加登录状态标记
-    pub saved_username: String, // 保存的用户名（用于已登录状态显示）
     pub show_message: bool,  // 控制消息弹窗显示
 }
 
@@ -29,8 +60,6 @@ impl Default for LoginState{
             password: String::new(), 
             is_loading: false,
             error_message: None,
-            is_logged_in: false,      // 默认未登录
-            saved_username: "管理员".to_string(), // 模拟已保存的用户名
             show_message: false,      // 默认不显示消息弹窗
         }
     }
@@ -40,12 +69,7 @@ impl Default for LoginState{
 #[function_component(Login)]
 pub fn login() -> Html { 
     // 定义不可变状态变量 使用 use_state 钩子来管理登录状态
-    let login_state = use_state(|| {
-        let mut state = LoginState::default();
-        // 设为 false 来显示登录表单，设为 true 来显示已登录状态
-        state.is_logged_in = false; // 改为 false 来测试登录表单
-        state
-    });
+    let login_state = use_state(LoginState::default);
 
     // 处理用户名输入变化
     let on_username_change = {
@@ -73,59 +97,73 @@ pub fn login() -> Html {
     let on_login = {
         let login_state = login_state.clone();
         Callback::from(move |_e: MouseEvent| {
-            if login_state.is_logged_in {
-                // 如果已登录，进入系统
-                // 这里可以跳转到主应用界面
-                web_sys::console::log_1(&"进入系统...".into());
-            } else {
-                // 执行登录逻辑
-                let mut new_state = (*login_state).clone();
-                new_state.is_loading = true;
-                new_state.error_message = None;
-                login_state.set(new_state.clone());
+            // 执行登录逻辑
+            let mut new_state = (*login_state).clone();
+            new_state.is_loading = true;
+            new_state.error_message = None;
+            new_state.show_message = false;
+            login_state.set(new_state.clone());
+            
+            // 调用真实的登录 API
+            let login_state_inner = login_state.clone();
+            let username = new_state.username.clone();
+            let password = new_state.password.clone();
+            
+            wasm_bindgen_futures::spawn_local(async move {
+                let args = LoginArgs { username, password };
+                let args_value = serde_wasm_bindgen::to_value(&args).unwrap();
                 
-                // 模拟登录验证（实际应用中应该调用 Tauri 命令）
-                let login_state_inner = login_state.clone();
-                wasm_bindgen_futures::spawn_local(async move {
-                    // 模拟网络延迟
-                    gloo_timers::future::TimeoutFuture::new(2000).await;
-                    
-                    let mut final_state = (*login_state_inner).clone();
-                    final_state.is_loading = false;
-                    
-                    // 简单的验证逻辑（实际应用中应该更安全）
-                    if new_state.username == "admin" && new_state.password == "123456" {
-                        final_state.is_logged_in = true;
-                        final_state.saved_username = new_state.username.clone();
+                let result = invoke("login", args_value).await;
+                let mut final_state = (*login_state_inner).clone();
+                final_state.is_loading = false;
+                
+                // 尝试解析API响应
+                if let Ok(api_response) = serde_wasm_bindgen::from_value::<ApiResponse<LoginData>>(result.clone()) {
+                    if api_response.success && api_response.data.is_some() {
+                        // 登录成功
+                        let login_data = api_response.data.unwrap();
+                        let username = login_data.username.clone();
+                        
+                        // 保存 token
+                        if let Some(window) = web_sys::window() {
+                            if let Ok(Some(storage)) = window.local_storage() {
+                                let _ = storage.set_item("access_token", &login_data.access_token);
+                                let _ = storage.set_item("username", &username);
+                            }
+                        }
+                        
+                        web_sys::console::log_1(&format!("登录成功！用户: {}", username).into());
+                        
+                        // TODO: 这里应该跳转到主应用界面
+                        // 可以使用路由或者触发父组件的状态变化
+                        web_sys::console::log_1(&"准备跳转到主界面...".into());
+                        
+                        // 清除登录表单状态
                         final_state.username.clear();
                         final_state.password.clear();
                         final_state.error_message = None;
                         final_state.show_message = false;
                     } else {
-                        final_state.error_message = Some("用户名或密码错误".to_string());
-                        final_state.show_message = true; // 显示弹窗
+                        // 登录失败，使用API返回的错误消息
+                        final_state.error_message = Some(api_response.message);
+                        final_state.show_message = true;
                     }
+                } else {
+                    // 解析失败，使用默认错误消息
+                    let error_msg = if let Some(error_str) = result.as_string() {
+                        error_str
+                    } else {
+                        "登录失败，请检查网络连接".to_string()
+                    };
                     
-                    login_state_inner.set(final_state);
-                });
-            }
+                    final_state.error_message = Some(error_msg);
+                    final_state.show_message = true;
+                }
+                
+                login_state_inner.set(final_state);
+            });
         })
-    };
-
-    // 处理切换账号
-    let on_switch_account = {
-        let login_state = login_state.clone();
-        Callback::from(move |_e: MouseEvent| {
-            let mut new_state = (*login_state).clone();
-            new_state.is_logged_in = false;
-            new_state.username.clear();
-            new_state.password.clear();
-            new_state.error_message = None;
-            login_state.set(new_state);
-        })
-    };
-
-    // 处理窗口最小化
+    };    // 处理窗口最小化
     let on_minimize = {
         Callback::from(move |_e: MouseEvent| {
             wasm_bindgen_futures::spawn_local(async move {
@@ -173,76 +211,50 @@ pub fn login() -> Html {
                     </div>
                 </div>
                 
-                // 用户名区域 - 根据登录状态显示不同内容
+                // 用户名区域
                 <div class="username-section">
-                    if login_state.is_logged_in {
-                        <h2 class="username">{&login_state.saved_username}</h2>
-                    } else {
-                        <h2 class="username">{"用户登录"}</h2>
-                    }
+                    <h2 class="username">{"用户登录"}</h2>
                 </div>
                 
-                // 登录表单或登录按钮
-                if login_state.is_logged_in {
-                    // 已登录状态 - 显示进入系统按钮
+                // 登录表单
+                <div class="login-form">
+                    <div class="form-group">
+                        <input 
+                            type="text"
+                            class="login-input"
+                            placeholder="用户名"
+                            value={login_state.username.clone()}
+                            onchange={on_username_change}
+                            disabled={login_state.is_loading}
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="password"
+                            class="login-input"
+                            placeholder="密码"
+                            value={login_state.password.clone()}
+                            onchange={on_password_change}
+                            disabled={login_state.is_loading}
+                        />
+                    </div>
+                    
                     <div class="login-actions">
                         <button 
                             type="button" 
                             class="wechat-login-button"
-                            disabled={login_state.is_loading}
-                            onclick={on_login.clone()}
+                            disabled={login_state.is_loading || login_state.username.is_empty() || login_state.password.is_empty()}
+                            onclick={on_login}
                         >
-                            <span>{"进入MES系统"}</span>
+                            if login_state.is_loading {
+                                <span class="loading-text">{"登录中..."}</span>
+                            } else {
+                                <span>{"登录"}</span>
+                            }
                         </button>
                     </div>
-                    
-                    // 底部选项
-                    <div class="bottom-options">
-                        <button class="option-btn" onclick={on_switch_account}>{"切换账号"}</button>
-                        <span class="divider">{"丨"}</span>
-                        <button class="option-btn">{"仅传输文件"}</button>
-                    </div>
-                } else {
-                    // 未登录状态 - 显示登录表单
-                    <div class="login-form">
-                        <div class="form-group">
-                            <input 
-                                type="text"
-                                class="login-input"
-                                placeholder="用户名"
-                                value={login_state.username.clone()}
-                                onchange={on_username_change}
-                                disabled={login_state.is_loading}
-                            />
-                        </div>
-                        
-                        <div class="form-group">
-                            <input 
-                                type="password"
-                                class="login-input"
-                                placeholder="密码"
-                                value={login_state.password.clone()}
-                                onchange={on_password_change}
-                                disabled={login_state.is_loading}
-                            />
-                        </div>
-                        
-                        <div class="login-actions">
-                            <button 
-                                type="button" 
-                                class="wechat-login-button"
-                                disabled={login_state.is_loading || login_state.username.is_empty() || login_state.password.is_empty()}
-                                onclick={on_login}
-                            >
-                                if login_state.is_loading {
-                                    <span class="loading-text">{"登录中..."}</span>
-                                } else {
-                                    <span>{"登录"}</span>
-                                }
-                            </button>
-                        </div>
-                    </div>
-                }
+                </div>
                 
                 // 消息弹窗（替代原来的错误信息显示）
                 if login_state.show_message && login_state.error_message.is_some() {
