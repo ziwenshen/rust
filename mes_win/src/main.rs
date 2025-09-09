@@ -1,4 +1,5 @@
 mod app;
+mod components;  // 添加这一行
 
 use app::App;
 

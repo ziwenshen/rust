@@ -13,9 +13,19 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "mes_win",
-        "width": 800,
-        "height": 600
+        "title": "MES管理系统",
+        "width": 400,
+        "height": 500,
+        "minWidth": 350,
+        "minHeight": 450,
+        "maxWidth": 500,
+        "maxHeight": 600,
+        "resizable": true,
+        "decorations": false,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true,
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {
