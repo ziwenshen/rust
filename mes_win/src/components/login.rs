@@ -9,6 +9,12 @@ extern "C" {
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 }
 
+// 登录组件属性
+#[derive(Properties, PartialEq)]
+pub struct LoginProps {
+    pub on_login_success: Callback<String>, // 登录成功回调，传递用户名
+}
+
 // 登录请求参数
 #[derive(Serialize)]
 struct LoginArgs {
@@ -67,7 +73,7 @@ impl Default for LoginState{
 
 // 主要的登录组件
 #[function_component(Login)]
-pub fn login() -> Html { 
+pub fn login(props: &LoginProps) -> Html { 
     // 定义不可变状态变量 使用 use_state 钩子来管理登录状态
     let login_state = use_state(LoginState::default);
 
@@ -96,6 +102,7 @@ pub fn login() -> Html {
     // 处理登录按钮点击
     let on_login = {
         let login_state = login_state.clone();
+        let login_success_callback = props.on_login_success.clone();
         Callback::from(move |_e: MouseEvent| {
             // 执行登录逻辑
             let mut new_state = (*login_state).clone();
@@ -106,6 +113,7 @@ pub fn login() -> Html {
             
             // 调用真实的登录 API
             let login_state_inner = login_state.clone();
+            let login_success_callback_inner = login_success_callback.clone();
             let username = new_state.username.clone();
             let password = new_state.password.clone();
             
@@ -134,9 +142,8 @@ pub fn login() -> Html {
                         
                         web_sys::console::log_1(&format!("登录成功！用户: {}", username).into());
                         
-                        // TODO: 这里应该跳转到主应用界面
-                        // 可以使用路由或者触发父组件的状态变化
-                        web_sys::console::log_1(&"准备跳转到主界面...".into());
+                        // 触发登录成功回调，切换到主界面
+                        login_success_callback_inner.emit(username);
                         
                         // 清除登录表单状态
                         final_state.username.clear();
@@ -193,12 +200,19 @@ pub fn login() -> Html {
     
      html! {
         <div class="wechat-login-container">
-            // 窗口控制栏
-            <div class="window-controls">
-                <div class="window-title">{"MES管理系统"}</div>
-                <div class="control-buttons">
-                    <button class="control-btn minimize" onclick={on_minimize}>{"−"}</button>
-                    <button class="control-btn close" onclick={on_close}>{"×"}</button>
+            // Windows风格的窗口控制按钮
+            <div class="window-titlebar" data-tauri-drag-region="true">
+                <div class="window-controls">
+                    <button class="window-control minimize" onclick={on_minimize}>
+                        <svg width="10" height="10" viewBox="0 0 10 10">
+                            <path d="M0,5 L10,5" stroke="currentColor" stroke-width="1"/>
+                        </svg>
+                    </button>
+                    <button class="window-control close" onclick={on_close}>
+                        <svg width="10" height="10" viewBox="0 0 10 10">
+                            <path d="M0,0 L10,10 M0,10 L10,0" stroke="currentColor" stroke-width="1"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
             
