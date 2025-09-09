@@ -3,8 +3,8 @@
 }
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px; /* 减小全局字体从16px到14px */
+  line-height: 20px; /* 相应调整行高 */
   font-weight: 400;
 
   color: #0f0f0f;
@@ -75,10 +75,10 @@ button {
 }
 
 button:hover {
-  border-color: #396cd8;
+  border-color: #ffffff;
 }
 button:active {
-  border-color: #396cd8;
+  border-color: #ffffff;
   background-color: #e8e8e8;
 }
 
@@ -115,6 +115,30 @@ button {
 /* 重置默认样式 */
 * {
   box-sizing: border-box;
+}
+
+/* 精致的滚动条样式 */
+::-webkit-scrollbar {
+  width: 4px; /* 非常细的滚动条 */
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* 透明轨道 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2); /* 半透明白色滑块 */
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4); /* 悬停时稍微明显一些 */
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body, html {
@@ -621,7 +645,7 @@ body, html {
     stroke-linejoin: round;
 }
 
-/* 主内容区域 */
+/* 主内容区域 - 三栏布局 */
 .app-main {
     flex: 1;
     display: flex;
@@ -632,68 +656,256 @@ body, html {
     box-sizing: border-box;
 }
 
-/* 左侧菜单栏 */
-.sidebar {
-    width: 200px;
-    background: #ffffff;
-    border-right: 1px solid #e0e0e0;
+/* 左侧一级菜单栏 */
+.sidebar-primary {
+    width: 60px; /* 减小宽度从80px到60px */
+    background: #0d1117;
     display: flex;
     flex-direction: column;
-    box-shadow: 1px 0 3px rgba(0, 0, 0, 0.05);
-    padding-top: 32px;
+    align-items: center;
+    padding: 12px 0; /* 减小内边距从20px到12px */
+    border-right: 1px solid #21262d;
+    padding-top: 38px; /* 减小顶部边距从52px到38px */
     box-sizing: border-box;
 }
 
-.menu {
-    flex: 1;
-    padding: 8px 0;
-}
-
-.menu-item-container {
+.user-section {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-}
-
-.menu-item {
-    display: flex;
     align-items: center;
-    padding: 12px 16px;
+    margin-bottom: 20px; /* 减小底部边距从30px到20px */
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px; /* 减小头像尺寸从50px到40px */
+    height: 40px;
+    border-radius: 6px; /* 相应调整圆角 */
+    border: none;
+    overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-radius: 0;
-    margin: 0 8px;
-    border-radius: 6px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    box-sizing: border-box;
+    opacity: 0.9;
 }
 
-.menu-item:hover {
-    background: #f0f0f0;
+.user-avatar:hover {
+    transform: scale(1.05);
+    opacity: 1; /* 悬停时稍微提高透明度 */
 }
 
-.menu-item.active {
-    background: #e3f2fd;
-    color: #1976d2;
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.menu-item.active .menu-icon svg {
-    stroke: #1976d2;
+.username-tooltip {
+    position: absolute;
+    left: 50px; /* 调整位置从70px到50px，适配更窄的侧边栏 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 5px 10px; /* 减小内边距 */
+    border-radius: 4px;
+    font-size: 11px; /* 减小字体从12px到11px */
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 1000;
 }
 
-.menu-icon {
-    margin-right: 12px;
+.user-avatar:hover + .username-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.primary-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* 减小间距从8px到6px */
+    flex: 1;
+}
+
+.primary-menu .menu-item {
+    width: 40px; /* 减小菜单项尺寸从50px到40px */
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 6px; /* 相应调整圆角 */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
 }
 
-.menu-icon svg {
-    stroke: #666666;
-    transition: stroke 0.2s ease;
+.primary-menu .menu-item:hover {
+    background: #21262d; /* 柔和的悬停背景 */
+    transform: scale(1.02); /* 更微妙的缩放效果 */
 }
 
-.menu-text {
-    font-size: 0.9rem;
-    font-weight: 400;
+.primary-menu .menu-item.active {
+    background: #30363d; /* 更柔和的深灰色激活背景 */
+    border: none;
+    box-sizing: border-box;
+}
+
+.primary-menu .menu-item svg {
+    width: 20px; /* 减小图标尺寸从24px到20px */
+    height: 20px;
+    stroke: #f0f6fc;
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.2s ease;
+    opacity: 0.7; /* 稍微降低默认透明度 */
+}
+
+.primary-menu .menu-item:hover svg,
+.primary-menu .menu-item.active svg {
+    stroke: #f0f6fc;
+    stroke-width: 2; /* 悬停时稍微加粗，但仍保持精致 */
+    opacity: 1; /* 悬停和激活时完全不透明 */
+}
+
+.menu-tooltip {
+    position: absolute;
+    left: 48px; /* 调整位置从60px到48px，适配更窄的侧边栏 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 5px 10px; /* 减小内边距 */
+    border-radius: 4px;
+    font-size: 11px; /* 减小字体从12px到11px */
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 1000;
+}
+
+.primary-menu .menu-item:hover .menu-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 中间二级菜单栏 */
+.sidebar-secondary {
+    width: 240px; /* 减小宽度从300px到240px */
+    background: #161b22;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #21262d;
+    padding-top: 28px; /* 减小顶部边距从32px到28px */
+    box-sizing: border-box;
+}
+
+.search-container {
+    padding: 12px 16px; /* 减小内边距从15px 20px到12px 16px */
+    border-bottom: 1px solid #21262d;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    z-index: 2;
+    stroke: #ffffff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.search-box input {
+    width: 100%;
+    height: 32px; /* 减小高度从36px到32px */
+    background: #2a2a2a;
+    border: 1px solid #444444;
+    border-radius: 5px; /* 减小圆角 */
+    padding: 0 12px 0 32px; /* 调整内边距 */
+    color: #ffffff;
+    font-size: 12px; /* 减小字体从14px到12px */
+    outline: none;
+    font-weight: 400; /* 减小字重 */
+}
+
+.search-box input::placeholder {
+    color: #888888;
+}
+
+.search-box input:focus {
+    background: #484848;
+}
+
+.secondary-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+/* 为二级菜单定制更精致的滚动条 */
+.secondary-menu::-webkit-scrollbar {
+    width: 3px;
+}
+
+.secondary-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.secondary-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+.secondary-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.secondary-menu-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.secondary-menu-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px; /* 减小内边距从16px 20px到12px 16px */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #21262d;
+}
+
+.secondary-menu-item:hover {
+    background: #21262d;
+}
+
+.secondary-menu-item.active {
+    background: #30363d;
+    border-left: none;
+    box-sizing: border-box;
+}
+
+.secondary-menu-title {
+    font-size: 13px; /* 减小字体从15px到13px */
+    font-weight: 500; /* 减小字重从600到500 */
+    color: #ffffff;
+    margin-bottom: 3px; /* 减小间距从4px到3px */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.secondary-menu-description {
+    font-size: 11px; /* 减小字体从12px到11px */
+    color: #e0e0e0;
+    line-height: 1.3;
 }
 
 /* 右侧内容区域 */
@@ -702,59 +914,101 @@ body, html {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #ffffff;
-    height: 100%;
-    padding-top: 32px;
+    background: #1e1e1e;
+    color: #ffffff;
+    padding-top: 32px; /* 为窗口控制按钮留出空间 */
     box-sizing: border-box;
+}
+
+/* 为内容区域定制滚动条 */
+.content-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.content-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .content-panel {
     flex: 1;
-    padding: 24px;
-    overflow: hidden;
+    padding: 18px; /* 减小内边距从24px到18px */
+    overflow: auto;
     height: 100%;
     box-sizing: border-box;
 }
 
 .panel-header {
-    margin-bottom: 24px;
+    margin-bottom: 18px; /* 减小间距从24px到18px */
 }
 
 .panel-header h2 {
-    margin: 0 0 8px 0;
-    font-size: 1.5rem;
+    margin: 0 0 6px 0; /* 减小间距从8px到6px */
+    font-size: 1.3rem; /* 减小字体从1.5rem到1.3rem */
     font-weight: 500;
-    color: #333333;
+    color: #ffffff;
 }
 
 .panel-header p {
     margin: 0;
-    color: #666666;
-    font-size: 0.9rem;
+    color: #cccccc;
+    font-size: 0.8rem; /* 减小字体从0.9rem到0.8rem */
 }
 
 /* 仪表板样式 */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* 减小最小宽度 */
+    gap: 18px; /* 减小间距从24px到18px */
+    overflow-y: auto; /* 添加滚动 */
+    padding-right: 8px; /* 为滚动条留出空间 */
+}
+
+/* 为仪表板网格定制滚动条 */
+.dashboard-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dashboard-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dashboard-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+}
+
+.dashboard-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.dashboard-content {
     margin-top: 24px;
     height: calc(100% - 120px);
     overflow: hidden;
 }
 
 .dashboard-card {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
+    background: #2d2d30;
+    border: 1px solid #3e3e42;
     border-radius: 8px;
-    padding: 20px;
+    padding: 24px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .dashboard-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border-color: #ffffff;
 }
 
 .dashboard-card .card-icon {
@@ -762,24 +1016,24 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     margin: 0 0 16px 0;
 }
 
 .dashboard-card .card-icon.production {
-    background: #e8f5e8;
+    background: rgba(76, 175, 80, 0.2);
     color: #4caf50;
 }
 
 .dashboard-card .card-icon.inventory {
-    background: #fff3e0;
+    background: rgba(255, 152, 0, 0.2);
     color: #ff9800;
 }
 
 .dashboard-card .card-icon.quality {
-    background: #e3f2fd;
+    background: rgba(33, 150, 243, 0.2);
     color: #2196f3;
 }
 
@@ -791,18 +1045,18 @@ body, html {
     margin: 0 0 8px 0;
     font-size: 1rem;
     font-weight: 500;
-    color: #333333;
+    color: #ffffff;
 }
 
 .dashboard-card .card-value {
     font-size: 2rem;
     font-weight: 600;
-    color: #333333;
+    color: #ffffff;
     margin-bottom: 4px;
 }
 
 .dashboard-card .card-description {
-    color: #666666;
+    color: #cccccc;
     font-size: 0.85rem;
 }
 
@@ -812,31 +1066,64 @@ body, html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 300px;
+    height: 100%;
     text-align: center;
 }
 
 .content-placeholder .placeholder-icon {
     margin-bottom: 16px;
-    opacity: 0.3;
+    opacity: 0.6;
 }
 
 .content-placeholder .placeholder-icon svg {
-    stroke: #666666;
+    stroke: #ffffff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .content-placeholder h3 {
     margin: 0 0 8px 0;
     font-size: 1.2rem;
     font-weight: 500;
-    color: #333333;
+    color: #ffffff;
 }
 
 .content-placeholder p {
     margin: 0;
-    color: #666666;
+    color: #cccccc;
     font-size: 0.9rem;
 }
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+    .sidebar-secondary {
+        width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-primary {
+        width: 60px;
+    }
+    
+    .sidebar-secondary {
+        width: 220px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .primary-menu .menu-item {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .content-panel {
+        padding: 16px;
+    }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -868,4 +1155,5 @@ body, html {
     .app-title h1 {
         font-size: 1rem;
     }
+}
 }

@@ -14,7 +14,7 @@
     "windows": [
       {
         "title": "MES管理系统",
-        "width": 1200,
+        "width": 1000,
         "height": 800,
         "minWidth": 350,
         "minHeight": 450,
