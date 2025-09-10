@@ -6,5 +6,76 @@
     <link data-trunk rel="css" href="styles.css" />
     <link data-trunk rel="copy-dir" href="public" />
   </head>
-  <body></body>
+  <body>
+    <script>
+      // Theme Toggle Functionality
+      function toggleTheme() {
+        const html = document.documentElement;
+        
+        if (html.getAttribute('data-theme') === 'light') {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          html.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+        }
+        
+        // 更新所有切换按钮的状态
+        updateThemeToggleButtons();
+      }
+
+      // 更新主题切换按钮状态
+      function updateThemeToggleButtons() {
+        const html = document.documentElement;
+        const isLight = html.getAttribute('data-theme') === 'light';
+        const buttons = document.querySelectorAll('.theme-toggle');
+        
+        buttons.forEach(button => {
+          const sunIcon = button.querySelector('.sun-icon');
+          const moonIcon = button.querySelector('.moon-icon');
+          
+          if (sunIcon && moonIcon) {
+            if (isLight) {
+              sunIcon.style.display = 'none';
+              moonIcon.style.display = 'block';
+            } else {
+              sunIcon.style.display = 'block';
+              moonIcon.style.display = 'none';
+            }
+          }
+        });
+      }
+
+      // Initialize theme on page load
+      function initializeTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const html = document.documentElement;
+        
+        if (savedTheme === 'light') {
+          html.setAttribute('data-theme', 'light');
+        } else {
+          html.removeAttribute('data-theme');
+        }
+        
+        // 延迟更新按钮状态，确保DOM已渲染
+        setTimeout(updateThemeToggleButtons, 100);
+      }
+
+      // Initialize theme when DOM is loaded
+      document.addEventListener('DOMContentLoaded', initializeTheme);
+      
+      // 监听动态内容变化
+      const observer = new MutationObserver(function(mutations) {
+        updateThemeToggleButtons();
+      });
+      
+      // 当DOM加载完成后开始监听
+      document.addEventListener('DOMContentLoaded', function() {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      });
+    </script>
+  </body>
 </html>

@@ -1,20 +1,114 @@
 .logo.yew:hover {
   filter: drop-shadow(0 0 2em #20a88a);
 }
+
+/* CSS Variables for Theme Support */
 :root {
+  /* Dark Theme (Default) */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-muted: #7d8590;
+  --border-primary: #30363d;
+  --border-secondary: #21262d;
+  --accent-primary: #238636;
+  --accent-hover: #2ea043;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 14px; /* 减小全局字体从16px到14px */
   line-height: 20px; /* 相应调整行高 */
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #f1f3f4;
+  --bg-quaternary: #e1e4e8;
+  --text-primary: #24292e;
+  --text-secondary: #586069;
+  --text-muted: #6a737d;
+  --border-primary: #e1e4e8;
+  --border-secondary: #d0d7de;
+  --accent-primary: #0366d6;
+  --accent-hover: #0256cc;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Theme Toggle Button - 放置在左侧边栏底部 */
+.theme-toggle {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.theme-toggle:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-primary);
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+  transform: rotate(15deg);
+}
+
+/* 登录页面的主题切换按钮 - 保持在右上角 */
+.theme-toggle-login {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: 48px !important;
+  height: 48px !important;
+  z-index: 1000 !important;
+}
+
+.theme-toggle-login:hover {
+  transform: scale(1.05) !important;
+}
+
+.theme-toggle-login svg {
+  width: 20px !important;
+  height: 20px !important;
 }
 
 .container {
@@ -44,12 +138,12 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--accent-primary);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--accent-hover);
 }
 
 h1 {
@@ -64,10 +158,10 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
   transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 2px var(--shadow-color);
 }
 
 button {
@@ -75,11 +169,11 @@ button {
 }
 
 button:hover {
-  border-color: #ffffff;
+  border-color: var(--border-primary);
 }
 button:active {
-  border-color: #ffffff;
-  background-color: #e8e8e8;
+  border-color: var(--border-primary);
+  background-color: var(--bg-tertiary);
 }
 
 input,
@@ -89,26 +183,6 @@ button {
 
 #greet-input {
   margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
 }
 
 /* 微信原生风格登录界面 */
@@ -152,11 +226,11 @@ body, html {
 .wechat-login-container {
   width: 100vw;
   height: 100vh;
-  background: #2c2c2c;
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   font-family: "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
-  color: #ffffff;
+  color: var(--text-primary);
   user-select: none;
   position: relative;
 }
@@ -224,10 +298,10 @@ body, html {
   width: 100%;
   height: 36px;
   padding: 8px 12px;
-  border: 1px solid #444444;
+  border: 1px solid var(--border-secondary);
   border-radius: 4px;
-  background: #3a3a3a;
-  color: #ffffff;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   font-size: 13px;
   font-family: inherit;
   box-sizing: border-box;
@@ -236,17 +310,17 @@ body, html {
 
 .login-input:focus {
   outline: none;
-  border-color: #07c160;
+  border-color: var(--accent-primary);
 }
 
 .login-input:disabled {
-  background: #2a2a2a;
-  color: #666666;
+  background: var(--bg-quaternary);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 
 .login-input::placeholder {
-  color: #888888;
+  color: var(--text-muted);
 }
 
 /* 登录按钮 */
@@ -258,10 +332,10 @@ body, html {
 .wechat-login-button {
   width: 100%;
   height: 40px;
-  background: #07c160;
+  background: var(--accent-primary);
   border: none;
   border-radius: 4px;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: normal;
   cursor: pointer;
@@ -273,11 +347,11 @@ body, html {
 }
 
 .wechat-login-button:hover:not(:disabled) {
-  background: #06ad56;
+  background: var(--accent-hover);
 }
 
 .wechat-login-button:active:not(:disabled) {
-  background: #059648;
+  background: var(--accent-hover);
 }
 
 .wechat-login-button:disabled {
@@ -649,7 +723,7 @@ body, html {
 .app-main {
     flex: 1;
     display: flex;
-    background: #f5f5f5;
+    background: var(--bg-secondary);
     overflow: hidden;
     height: 100%;
     width: 100%;
@@ -659,14 +733,15 @@ body, html {
 /* 左侧一级菜单栏 */
 .sidebar-primary {
     width: 60px; /* 减小宽度从80px到60px */
-    background: #0d1117;
+    background: var(--bg-primary);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 12px 0; /* 减小内边距从20px到12px */
-    border-right: 1px solid #21262d;
+    border-right: 1px solid var(--border-primary);
     padding-top: 38px; /* 减小顶部边距从52px到38px */
     box-sizing: border-box;
+    position: relative; /* 添加相对定位以支持绝对定位的子元素 */
 }
 
 .user-section {
@@ -705,16 +780,18 @@ body, html {
     left: 50px; /* 调整位置从70px到50px，适配更窄的侧边栏 */
     top: 50%;
     transform: translateY(-50%);
-    background: #1e1e1e;
-    color: #ffffff;
-    padding: 5px 10px; /* 减小内边距 */
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 6px 10px; /* 减小内边距从8px 12px到6px 10px */
     border-radius: 4px;
     font-size: 11px; /* 减小字体从12px到11px */
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 1000;
+    z-index: 10;
+    border: 1px solid var(--border-secondary);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .user-avatar:hover + .username-tooltip {
@@ -796,17 +873,17 @@ body, html {
 /* 中间二级菜单栏 */
 .sidebar-secondary {
     width: 240px; /* 减小宽度从300px到240px */
-    background: #161b22;
+    background: var(--bg-secondary);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #21262d;
+    border-right: 1px solid var(--border-primary);
     padding-top: 28px; /* 减小顶部边距从32px到28px */
     box-sizing: border-box;
 }
 
 .search-container {
     padding: 12px 16px; /* 减小内边距从15px 20px到12px 16px */
-    border-bottom: 1px solid #21262d;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .search-box {
@@ -819,7 +896,7 @@ body, html {
     position: absolute;
     left: 12px;
     z-index: 2;
-    stroke: #ffffff;
+    stroke: var(--text-primary);
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -828,22 +905,22 @@ body, html {
 .search-box input {
     width: 100%;
     height: 32px; /* 减小高度从36px到32px */
-    background: #2a2a2a;
-    border: 1px solid #444444;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
     border-radius: 5px; /* 减小圆角 */
     padding: 0 12px 0 32px; /* 调整内边距 */
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 12px; /* 减小字体从14px到12px */
     outline: none;
     font-weight: 400; /* 减小字重 */
 }
 
 .search-box input::placeholder {
-    color: #888888;
+    color: var(--text-muted);
 }
 
 .search-box input:focus {
-    background: #484848;
+    background: var(--bg-quaternary);
 }
 
 .secondary-menu {
@@ -881,15 +958,15 @@ body, html {
     padding: 12px 16px; /* 减小内边距从16px 20px到12px 16px */
     cursor: pointer;
     transition: background-color 0.2s ease;
-    border-bottom: 1px solid #21262d;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .secondary-menu-item:hover {
-    background: #21262d;
+    background: var(--bg-tertiary);
 }
 
 .secondary-menu-item.active {
-    background: #30363d;
+    background: var(--bg-quaternary);
     border-left: none;
     box-sizing: border-box;
 }
@@ -897,14 +974,14 @@ body, html {
 .secondary-menu-title {
     font-size: 13px; /* 减小字体从15px到13px */
     font-weight: 500; /* 减小字重从600到500 */
-    color: #ffffff;
+    color: var(--text-primary);
     margin-bottom: 3px; /* 减小间距从4px到3px */
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px var(--shadow-color);
 }
 
 .secondary-menu-description {
     font-size: 11px; /* 减小字体从12px到11px */
-    color: #e0e0e0;
+    color: var(--text-secondary);
     line-height: 1.3;
 }
 
@@ -914,8 +991,8 @@ body, html {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #1e1e1e;
-    color: #ffffff;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding-top: 32px; /* 为窗口控制按钮留出空间 */
     box-sizing: border-box;
 }
@@ -954,12 +1031,12 @@ body, html {
     margin: 0 0 6px 0; /* 减小间距从8px到6px */
     font-size: 1.3rem; /* 减小字体从1.5rem到1.3rem */
     font-weight: 500;
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .panel-header p {
     margin: 0;
-    color: #cccccc;
+    color: var(--text-secondary);
     font-size: 0.8rem; /* 减小字体从0.9rem到0.8rem */
 }
 
@@ -997,18 +1074,18 @@ body, html {
 }
 
 .dashboard-card {
-    background: #2d2d30;
-    border: 1px solid #3e3e42;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
     border-radius: 8px;
     padding: 24px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .dashboard-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    border-color: #ffffff;
+    box-shadow: 0 4px 16px var(--shadow-color);
+    border-color: var(--accent-primary);
 }
 
 .dashboard-card .card-icon {
@@ -1045,18 +1122,18 @@ body, html {
     margin: 0 0 8px 0;
     font-size: 1rem;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .dashboard-card .card-value {
     font-size: 2rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
 .dashboard-card .card-description {
-    color: #cccccc;
+    color: var(--text-secondary);
     font-size: 0.85rem;
 }
 
