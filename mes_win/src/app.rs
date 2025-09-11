@@ -4,7 +4,6 @@ use yew::prelude::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen_futures::spawn_local;
-use gloo_timers;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
@@ -76,11 +75,9 @@ pub fn app() -> Html {
                                 username: username.to_string(),
                             });
 
-                            // 如果恢复的状态是已登录，调整窗口大小
+                            // 如果恢复的状态是已登录，立即调整窗口大小
                             if is_logged_in {
                                 spawn_local(async move {
-                                    gloo_timers::future::sleep(std::time::Duration::from_millis(200)).await;
-                                    
                                     let resize_args = serde_json::json!({
                                         "args": {
                                             "width": 1200,
@@ -103,13 +100,10 @@ pub fn app() -> Html {
     {
         use_effect_with(app_state.clone(), move |state| {
             if state.is_logged_in {
-                web_sys::console::log_1(&"User logged in, scheduling window resize...".into());
+                web_sys::console::log_1(&"User logged in, resizing window to main size...".into());
                 
-                // 延迟800ms执行窗口改变，确保界面完全渲染
+                // 立即执行窗口调整，无需延迟
                 spawn_local(async move {
-                    gloo_timers::future::TimeoutFuture::new(1000).await;
-                    web_sys::console::log_1(&"Executing window resize to main size...".into());
-                    
                     let resize_args = serde_json::json!({
                         "args": {
                             "width": 1200.0,
@@ -122,11 +116,8 @@ pub fn app() -> Html {
                     web_sys::console::log_1(&format!("Window resized successfully to {}x{}", 1200.0, 800.0).into());
                 });
             } else {
-                web_sys::console::log_1(&"User not logged in, scheduling window resize to login size...".into());
+                web_sys::console::log_1(&"User not logged in, resizing window to login size...".into());
                 spawn_local(async move {
-                    gloo_timers::future::TimeoutFuture::new(100).await;
-                    web_sys::console::log_1(&"Executing window resize to login size...".into());
-                    
                     let resize_args = serde_json::json!({
                         "args": {
                             "width": 400.0,
