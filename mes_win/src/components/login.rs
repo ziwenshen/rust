@@ -2,11 +2,39 @@
 use yew::prelude::*;
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use gloo_timers::future::TimeoutFuture;
 
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+}
+
+// 检查是否在Tauri环境中运行
+fn is_tauri_environment() -> bool {
+    web_sys::window()
+        .and_then(|w| w.get("__TAURI__"))
+        .and_then(|t| t.dyn_into::<web_sys::js_sys::Object>().ok())
+        .is_some()
+}
+
+// 模拟登录API调用（用于网页版）
+async fn mock_login_api(username: &str, password: &str) -> Result<LoginData, String> {
+    // 模拟网络延迟
+    TimeoutFuture::new(1000).await;
+    
+    // 简单的用户名密码验证
+    if username == "admin" && password == "admin" {
+        Ok(LoginData {
+            access_token: "mock_token_12345".to_string(),
+            token_type: "Bearer".to_string(),
+            expires_in: 3600,
+            username: username.to_string(),
+            user_id: 1,
+        })
+    } else {
+        Err("用户名或密码错误".to_string())
+    }
 }
 
 // 登录组件属性
@@ -118,53 +146,91 @@ pub fn login(props: &LoginProps) -> Html {
             let password = new_state.password.clone();
             
             wasm_bindgen_futures::spawn_local(async move {
-                let args = LoginArgs { username, password };
-                let args_value = serde_wasm_bindgen::to_value(&args).unwrap();
+                let args = LoginArgs { username: username.clone(), password: password.clone() };
                 
-                let result = invoke("login", args_value).await;
                 let mut final_state = (*login_state_inner).clone();
                 final_state.is_loading = false;
                 
-                // 尝试解析API响应
-                if let Ok(api_response) = serde_wasm_bindgen::from_value::<ApiResponse<LoginData>>(result.clone()) {
-                    if api_response.success && api_response.data.is_some() {
-                        // 登录成功
-                        let login_data = api_response.data.unwrap();
-                        let username = login_data.username.clone();
-                        
-                        // 保存 token
-                        if let Some(window) = web_sys::window() {
-                            if let Ok(Some(storage)) = window.local_storage() {
-                                let _ = storage.set_item("access_token", &login_data.access_token);
-                                let _ = storage.set_item("username", &username);
+                // 检查是否在Tauri环境中
+                if is_tauri_environment() {
+                    // Tauri环境：调用原生API
+                    let args_value = serde_wasm_bindgen::to_value(&args).unwrap();
+                    let result = invoke("login", args_value).await;
+                    
+                    // 尝试解析API响应
+                    if let Ok(api_response) = serde_wasm_bindgen::from_value::<ApiResponse<LoginData>>(result.clone()) {
+                        if api_response.success && api_response.data.is_some() {
+                            // 登录成功
+                            let login_data = api_response.data.unwrap();
+                            let username = login_data.username.clone();
+                            
+                            // 保存 token
+                            if let Some(window) = web_sys::window() {
+                                if let Ok(Some(storage)) = window.local_storage() {
+                                    let _ = storage.set_item("access_token", &login_data.access_token);
+                                    let _ = storage.set_item("username", &username);
+                                }
                             }
+                            
+                            web_sys::console::log_1(&format!("登录成功！用户: {}", username).into());
+                            
+                            // 触发登录成功回调，切换到主界面
+                            login_success_callback_inner.emit(username);
+                            
+                            // 清除登录表单状态
+                            final_state.username.clear();
+                            final_state.password.clear();
+                            final_state.error_message = None;
+                            final_state.show_message = false;
+                        } else {
+                            // 登录失败，使用API返回的错误消息
+                            final_state.error_message = Some(api_response.message);
+                            final_state.show_message = true;
                         }
-                        
-                        web_sys::console::log_1(&format!("登录成功！用户: {}", username).into());
-                        
-                        // 触发登录成功回调，切换到主界面
-                        login_success_callback_inner.emit(username);
-                        
-                        // 清除登录表单状态
-                        final_state.username.clear();
-                        final_state.password.clear();
-                        final_state.error_message = None;
-                        final_state.show_message = false;
                     } else {
-                        // 登录失败，使用API返回的错误消息
-                        final_state.error_message = Some(api_response.message);
+                        // 解析失败，使用默认错误消息
+                        let error_msg = if let Some(error_str) = result.as_string() {
+                            error_str
+                        } else {
+                            "登录失败，请检查网络连接".to_string()
+                        };
+                        
+                        final_state.error_message = Some(error_msg);
                         final_state.show_message = true;
                     }
                 } else {
-                    // 解析失败，使用默认错误消息
-                    let error_msg = if let Some(error_str) = result.as_string() {
-                        error_str
-                    } else {
-                        "登录失败，请检查网络连接".to_string()
-                    };
+                    // 网页环境：使用模拟API
+                    web_sys::console::log_1(&"网页版模式：使用模拟登录".into());
                     
-                    final_state.error_message = Some(error_msg);
-                    final_state.show_message = true;
+                    match mock_login_api(&username, &password).await {
+                        Ok(login_data) => {
+                            let username = login_data.username.clone();
+                            
+                            // 保存 token
+                            if let Some(window) = web_sys::window() {
+                                if let Ok(Some(storage)) = window.local_storage() {
+                                    let _ = storage.set_item("access_token", &login_data.access_token);
+                                    let _ = storage.set_item("username", &username);
+                                }
+                            }
+                            
+                            web_sys::console::log_1(&format!("模拟登录成功！用户: {}", username).into());
+                            
+                            // 触发登录成功回调，切换到主界面
+                            login_success_callback_inner.emit(username);
+                            
+                            // 清除登录表单状态
+                            final_state.username.clear();
+                            final_state.password.clear();
+                            final_state.error_message = None;
+                            final_state.show_message = false;
+                        }
+                        Err(error_msg) => {
+                            // 登录失败
+                            final_state.error_message = Some(error_msg);
+                            final_state.show_message = true;
+                        }
+                    }
                 }
                 
                 login_state_inner.set(final_state);
