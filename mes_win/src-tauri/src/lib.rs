@@ -6,7 +6,7 @@ mod window;
 
 // 使用auth模块的功能
 use auth::{login, get_current_user, get_current_token, is_logged_in, logout};
-use window::{close, minimize, resize_window, toggle_maximize};
+use window::{close, minimize, resize_window, toggle_maximize, open_profile_window};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -27,7 +27,8 @@ pub fn run() {
             minimize, 
             close,
             resize_window,
-            toggle_maximize
+            toggle_maximize,
+            open_profile_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

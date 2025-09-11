@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* 平滑滚动 */
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* 自定义滚动条样式 - 无感滚动 */
+        body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Firefox 滚动条样式 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .profile-header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 32px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .profile-username {
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .profile-role {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .profile-content {
+            flex: 1;
+            padding: 20px;
+            min-height: 0; /* 允许内容收缩 */
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-item-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .profile-item-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            padding: 20px;
+            padding-bottom: 30px; /* 增加底部边距确保按钮可见 */
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: rgba(255, 59, 48, 0.8);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 59, 48, 1);
+            transform: translateY(-1px);
+        }
+
+        .window-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .window-control {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .window-control:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .window-control.close:hover {
+            background: #ff5f57;
+        }
+
+        /* 自定义提示框样式 */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 200px;
+            text-align: center;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9998;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow()">×</button>
+    </div>
+
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <span id="avatar-text">U</span>
+        </div>
+        <h2 class="profile-username" id="username">用户名</h2>
+        <p class="profile-role">管理员</p>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h3>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                个人信息
+            </h3>
+            <div class="profile-item">
+                <span class="profile-item-label">用户名</span>
+                <span class="profile-item-value" id="info-username">admin</span>
+            </div>
+            <div class="profile-item">
+                <span class="profile-item-label">角色</span>
+                <span class="profile-item-value">系统管理员</span>
+            </div>
+            <div class="profile-item">
+                <span class="profile-item-label">登录时间</span>
+                <span class="profile-item-value" id="login-time">--</span>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                快捷操作
+            </h3>
+            <button class="btn btn-primary" onclick="changePassword()">
+                修改密码
+            </button>
+            <button class="btn btn-primary" onclick="viewLogs()">
+                查看操作日志
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <button class="btn btn-danger" onclick="logout()">
+            退出登录
+        </button>
+    </div>
+
+    <script>
+        // 获取当前用户信息
+        async function getCurrentUser() {
+            try {
+                const result = await window.__TAURI__.core.invoke('get_current_user');
+                if (result) {
+                    document.getElementById('username').textContent = result;
+                    document.getElementById('info-username').textContent = result;
+                    document.getElementById('avatar-text').textContent = result.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+            }
+        }
+
+        // 关闭窗口
+        async function closeWindow() {
+            try {
+                await window.__TAURI__.core.invoke('close');
+            } catch (error) {
+                console.error('关闭窗口失败:', error);
+            }
+        }
+
+        // 退出登录
+        async function logout() {
+            showCustomConfirm('确定要退出登录吗？', async () => {
+                try {
+                    await window.__TAURI__.core.invoke('logout');
+                    // 关闭个人中心窗口
+                    await closeWindow();
+                } catch (error) {
+                    console.error('退出登录失败:', error);
+                }
+            });
+        }
+
+        // 自定义确认对话框
+        function showCustomConfirm(message, onConfirm) {
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-alert-overlay';
+            
+            // 创建确认框
+            const confirmBox = document.createElement('div');
+            confirmBox.className = 'custom-alert';
+            confirmBox.style.minWidth = '250px';
+            
+            // 添加消息
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageDiv.style.marginBottom = '15px';
+            
+            // 添加按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '10px';
+            buttonContainer.style.justifyContent = 'center';
+            
+            // 确定按钮
+            const confirmBtn = document.createElement('button');
+            confirmBtn.textContent = '确定';
+            confirmBtn.className = 'btn btn-danger';
+            confirmBtn.style.flex = '1';
+            confirmBtn.style.margin = '0';
+            confirmBtn.style.padding = '8px 16px';
+            confirmBtn.style.fontSize = '12px';
+            
+            // 取消按钮
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = '取消';
+            cancelBtn.className = 'btn btn-primary';
+            cancelBtn.style.flex = '1';
+            cancelBtn.style.margin = '0';
+            cancelBtn.style.padding = '8px 16px';
+            cancelBtn.style.fontSize = '12px';
+            
+            buttonContainer.appendChild(cancelBtn);
+            buttonContainer.appendChild(confirmBtn);
+            confirmBox.appendChild(messageDiv);
+            confirmBox.appendChild(buttonContainer);
+            
+            // 添加到页面
+            document.body.appendChild(overlay);
+            document.body.appendChild(confirmBox);
+            
+            // 关闭对话框函数
+            const closeConfirm = () => {
+                document.body.removeChild(overlay);
+                document.body.removeChild(confirmBox);
+            };
+            
+            // 事件处理
+            cancelBtn.addEventListener('click', closeConfirm);
+            overlay.addEventListener('click', closeConfirm);
+            confirmBtn.addEventListener('click', () => {
+                closeConfirm();
+                onConfirm();
+            });
+        }
+        function showCustomAlert(message) {
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-alert-overlay';
+            
+            // 创建提示框
+            const alertBox = document.createElement('div');
+            alertBox.className = 'custom-alert';
+            alertBox.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(overlay);
+            document.body.appendChild(alertBox);
+            
+            // 点击遮罩层或提示框关闭
+            const closeAlert = () => {
+                document.body.removeChild(overlay);
+                document.body.removeChild(alertBox);
+            };
+            
+            overlay.addEventListener('click', closeAlert);
+            alertBox.addEventListener('click', closeAlert);
+            
+            // 3秒后自动关闭
+            setTimeout(closeAlert, 3000);
+        }
+
+        // 修改密码
+        function changePassword() {
+            showCustomAlert('修改密码功能暂未实现');
+        }
+
+        // 查看操作日志
+        function viewLogs() {
+            showCustomAlert('查看操作日志功能暂未实现');
+        }
+
+        // 设置当前时间
+        function setLoginTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('login-time').textContent = timeString;
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            getCurrentUser();
+            setLoginTime();
+        });
+    </script>
+</body>
+</html>

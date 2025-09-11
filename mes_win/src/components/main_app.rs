@@ -135,8 +135,34 @@ pub fn main_app(props: &MainAppProps) -> Html {
         })
     };
 
+    // 处理用户头像点击 - 打开个人中心窗口
+    let on_avatar_click = {
+        Callback::from(move |_e: MouseEvent| {
+            web_sys::console::log_1(&"Avatar clicked! Opening profile window...".into());
+            
+            // 调用Tauri命令打开个人中心窗口
+            wasm_bindgen_futures::spawn_local(async move {
+                let result = invoke("open_profile_window", serde_wasm_bindgen::to_value(&()).unwrap()).await;
+                
+                // 尝试解析结果
+                match serde_wasm_bindgen::from_value::<Result<(), String>>(result) {
+                    Ok(Ok(_)) => {
+                        web_sys::console::log_1(&"个人中心窗口打开成功".into());
+                    },
+                    Ok(Err(e)) => {
+                        web_sys::console::log_1(&format!("打开个人中心窗口失败: {}", e).into());
+                    },
+                    Err(e) => {
+                        web_sys::console::log_1(&format!("解析结果失败: {:?}", e).into());
+                    }
+                }
+            });
+        })
+    };
+
     html! {
-        <div class="main-app-container">
+        <>
+            <div class="main-app-container">
             // Windows风格的窗口控制按钮
             <div class="window-titlebar" data-tauri-drag-region="true">
                 <div class="window-controls">
@@ -182,7 +208,7 @@ pub fn main_app(props: &MainAppProps) -> Html {
                 <aside class="sidebar-primary">
                     // 用户头像区域
                     <div class="user-section">
-                        <div class="user-avatar">
+                        <div class="user-avatar" onclick={on_avatar_click.clone()}>
                             <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM0Qzc2RjEiLz4KPGV4dCB4PSIyMCIgeT0iMjQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPnsocHJvcHMudXNlcm5hbWUuY2hhcnNfYXQoMCldfTwvdGV4dD4KPC9zdmc+" alt={props.username.clone()} />
                         </div>
                         <div class="username-tooltip">{&props.username}</div>
@@ -310,6 +336,7 @@ pub fn main_app(props: &MainAppProps) -> Html {
                 </section>
             </main>
         </div>
+        </>
     }
 }
 

@@ -61,8 +61,10 @@ pub fn app() -> Html {
                                     gloo_timers::future::sleep(std::time::Duration::from_millis(200)).await;
                                     
                                     let resize_args = serde_json::json!({
-                                        "width": 1200,
-                                        "height": 800
+                                        "args": {
+                                            "width": 1200,
+                                            "height": 800
+                                        }
                                     });
                                     let _result = invoke("resize_window", serde_wasm_bindgen::to_value(&resize_args).unwrap()).await;
                                     web_sys::console::log_1(&"恢复状态时窗口调整为主界面大小".into());
@@ -87,14 +89,16 @@ pub fn app() -> Html {
                     gloo_timers::future::TimeoutFuture::new(1000).await;
                     web_sys::console::log_1(&"Executing window resize to main size...".into());
                     
-                    let resize_args = ResizeArgs {
-                        width: 1200.0,
-                        height: 800.0,
-                    };
+                    let resize_args = serde_json::json!({
+                        "args": {
+                            "width": 1200.0,
+                            "height": 800.0
+                        }
+                    });
                     
                     let js_args = serde_wasm_bindgen::to_value(&resize_args).unwrap();
                     let _result = invoke("resize_window", js_args).await;
-                    web_sys::console::log_1(&format!("Window resized successfully to {}x{}", resize_args.width, resize_args.height).into());
+                    web_sys::console::log_1(&format!("Window resized successfully to {}x{}", 1200.0, 800.0).into());
                 });
             } else {
                 web_sys::console::log_1(&"User not logged in, scheduling window resize to login size...".into());
@@ -102,10 +106,12 @@ pub fn app() -> Html {
                     gloo_timers::future::TimeoutFuture::new(100).await;
                     web_sys::console::log_1(&"Executing window resize to login size...".into());
                     
-                    let resize_args = ResizeArgs {
-                        width: 400.0,
-                        height: 500.0,
-                    };
+                    let resize_args = serde_json::json!({
+                        "args": {
+                            "width": 400.0,
+                            "height": 500.0
+                        }
+                    });
                     
                     let js_args = serde_wasm_bindgen::to_value(&resize_args).unwrap();
                     let _result = invoke("resize_window", js_args).await;
