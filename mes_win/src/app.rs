@@ -1,5 +1,5 @@
-use crate::components::login::Login;
-use crate::components::main_app::MainApp;
+use crate::ui::pages::login::Login;
+use crate::ui::pages::main_app::MainApp;
 use yew::prelude::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::closure::Closure;

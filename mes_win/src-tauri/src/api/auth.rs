@@ -1,6 +1,6 @@
-use super::types::{ApiResponse, LoginRequest};
-use super::store::{UserSession, USER_STORE};
-use super::client::AUTH_CLIENT;
+use crate::auth::types::{ApiResponse, LoginRequest};
+use crate::auth::store::{UserSession, USER_STORE};
+use crate::auth::client::AUTH_CLIENT;
 use tauri::{Manager, Emitter};
 
 /// 登录API调用

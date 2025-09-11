@@ -1,5 +1,9 @@
 mod app;
-mod components;  // 添加这一行
+mod ui;         // 新的UI模块
+mod auth;       // 认证模块
+mod core;       // 核心模块
+mod services;   // 服务模块
+mod utils;      // 工具模块
 
 use app::App;
 

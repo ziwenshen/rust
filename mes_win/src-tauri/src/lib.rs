@@ -2,11 +2,12 @@
 
 // 导入模块
 mod auth;
-mod window;
+mod windows;
+mod api;
 
-// 使用auth模块的功能
-use auth::{login, get_current_user, get_current_token, is_logged_in, logout};
-use window::{close, minimize, resize_window, toggle_maximize, open_profile_window};
+// 使用新模块结构的功能
+use api::{login, get_current_user, get_current_token, is_logged_in, logout};
+use windows::{close, minimize, resize_window, toggle_maximize, open_profile_window};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
