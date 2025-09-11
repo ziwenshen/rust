@@ -29,3 +29,18 @@ pub struct ApiResponse {
     pub message: String,
     pub data: Option<LoginData>,
 }
+
+// 通用API响应结构（用于登出等不返回LoginData的接口）
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenericApiResponse {
+    pub code: u32,
+    pub message: String,
+    pub data: Option<serde_json::Value>,
+    pub timestamp: String,
+}
+
+impl GenericApiResponse {
+    pub fn success(&self) -> bool {
+        self.code == 200
+    }
+}

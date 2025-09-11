@@ -2,6 +2,7 @@ use crate::components::login::Login;
 use crate::components::main_app::MainApp;
 use yew::prelude::*;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::closure::Closure;
 use wasm_bindgen_futures::spawn_local;
 use gloo_timers;
 use serde::{Deserialize, Serialize};
@@ -11,6 +12,9 @@ use serde_json;
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+    
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "event"])]
+    async fn listen(event: &str, handler: &js_sys::Function) -> JsValue;
 }
 
 // 窗口大小调整参数
@@ -44,6 +48,23 @@ pub fn app() -> Html {
     {
         let app_state = app_state.clone();
         use_effect_with((), move |_| {
+            // 设置登出事件监听器
+            let app_state_for_logout = app_state.clone();
+            spawn_local(async move {
+                let logout_handler = Closure::wrap(Box::new(move |_event: JsValue| {
+                    web_sys::console::log_1(&"收到登出事件，更新应用状态".into());
+                    app_state_for_logout.set(AppState::default());
+                    
+                    // 清除本地存储
+                    if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
+                        let _ = storage.remove_item("app_state");
+                    }
+                }) as Box<dyn Fn(JsValue)>);
+                
+                let _ = listen("logout", logout_handler.as_ref().unchecked_ref()).await;
+                logout_handler.forget(); // 防止过早释放
+            });
+            
             // 恢复登录状态
             if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
                 if let Ok(Some(stored_state)) = storage.get_item("app_state") {

@@ -72,7 +72,7 @@ pub async fn open_profile_window(app: tauri::AppHandle) -> Result<(), String> {
         tauri::WebviewUrl::App("public/profile.html".into())
     )
     .title("个人中心")
-    .inner_size(400.0, 500.0)
+    .inner_size(400.0, 550.0)
     .resizable(false)
     .maximizable(false)
     .minimizable(false)
