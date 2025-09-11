@@ -38,9 +38,3 @@ pub struct GenericApiResponse {
     pub data: Option<serde_json::Value>,
     pub timestamp: String,
 }
-
-impl GenericApiResponse {
-    pub fn success(&self) -> bool {
-        self.code == 200
-    }
-}

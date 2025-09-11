@@ -9,6 +9,7 @@ extern "C" {
 }
 
 // 检查是否在Tauri环境中运行
+#[allow(dead_code)]
 fn is_tauri_environment() -> bool {
     web_sys::window()
         .and_then(|w| w.get("__TAURI__"))
